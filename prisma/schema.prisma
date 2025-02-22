@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  email     String  @unique
+  name      String
+  password  String
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())  // อัปเดตอัตโนมัติเมื่อมีการเปลี่ยนแปลง
+}
+
+model Course {
+  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  name      String  @unique
+  reviews   Review[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model Review {
+  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  rating    Int
+  comment   String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  courseId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) // อัปเดตอัตโนมัติเมื่อมีการเปลี่ยนแปลง
+}
