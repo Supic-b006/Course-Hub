@@ -21,7 +21,6 @@ export default function HomePage() {
         }
     }, []);
     
-
     return (
         <div style={{ maxWidth: 400, margin: "auto", textAlign: "center" }}>
             <h2>🏠 หน้าหลัก</h2>
