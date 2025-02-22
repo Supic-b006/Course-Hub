@@ -8,17 +8,17 @@ datasource db {
 }
 
 model User {
-  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  id        Int     @id @default(autoincrement()) 
   email     String  @unique
   name      String
   password  String
   reviews   Review[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())  // อัปเดตอัตโนมัติเมื่อมีการเปลี่ยนแปลง
+  updatedAt DateTime @default(now())  
 }
 
 model Course {
-  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  id        Int     @id @default(autoincrement()) 
   name      String  @unique
   reviews   Review[]
   createdAt DateTime @default(now())
@@ -26,13 +26,13 @@ model Course {
 }
 
 model Review {
-  id        String  @id @default(uuid()) // ใช้ UUID เป็นค่าเริ่มต้น
+  id        Int     @id @default(autoincrement()) 
   rating    Int
   comment   String
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  userId    Int    
   course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  courseId  String
+  courseId  Int    
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) // อัปเดตอัตโนมัติเมื่อมีการเปลี่ยนแปลง
+  updatedAt DateTime @default(now()) 
 }

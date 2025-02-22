@@ -1,37 +1,37 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSession, signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+export default function Profile() {
+  const { data: session, status } = useSession()
 
-export default function HomePage() {
-    const router = useRouter();
-    const [user, setUser] = useState<{ id: string; email: string; name?: string } | null>(null);
+  const router = useRouter()
 
-    useEffect(() => {
-        try {
-            const userData = localStorage.getItem("user");
-            if (userData) {
-                setUser(JSON.parse(userData));
-            } else {
-                router.push("/login");
-            }
-        } catch (error) {
-            console.error("Error parsing user data:", error);
-            router.push("/login");
-        }
-    }, []);
-    
-    return (
-        <div style={{ maxWidth: 400, margin: "auto", textAlign: "center" }}>
-            <h2>🏠 หน้าหลัก</h2>
-            {user ? (
-                <>
-                    <p>👤 ยินดีต้อนรับ, {user.name || "ผู้ใช้"}!</p>
-                    <p>🆔 ID: {user.id}</p>
-                </>
-            ) : (
-                <p>กำลังโหลด...</p>
-            )}
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/')
+    }
+  }, [status, router])
+
+  // When after loading success and have session, show profile
+  return (
+    status === 'authenticated' &&
+    session.user && (
+      <div className="flex h-screen items-center justify-center">
+        <div className="bg-white p-6 rounded-md shadow-md">
+          <p>
+            Welcome, <b>{session.user.name}!</b>
+          </p>
+          <p>Email: {session.user.email}</p>
+          <button
+            onClick={() => signOut({ callbackUrl: '/signin' })}
+            className="w-full bg-blue-500 text-white py-2 rounded"
+          >
+            Logout
+          </button>
         </div>
-    );
+      </div>
+    )
+  )
 }
