@@ -1,12 +1,9 @@
 'use client'
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { fromJSON } from "postcss";
-import { Prisma } from "@prisma/client";
-import { POST } from "../api/login/route";
 
-export default function name() {
-    const route = useRouter();
+export default function RegisterForm() {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         name: "",
         email: "",
@@ -17,28 +14,56 @@ export default function name() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleRegister = async(e: React.FormEvent) => {
+    const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         const res = await fetch("/api/register", {
             method: "POST",
-            headers: {"Content-Type": "application-json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(formData)
         });
 
-        const data = await res.json();
-        if(res.ok){
-            console.log("register Conpet");
-            
+        if (res.ok) {
+            console.log("Registration Complete");
         }
-    }
+    };
 
     return (
-        <form onSubmit={handleRegister} >
-            <h2 className = 'text-3xl'>📝 สมัครสมาชิก</h2>
-            <input className= 'text-black' type="email" name="email" placeholder="Email" onChange={handleChange} required />
-            <input className= 'text-black' type="text" name="name" placeholder="Name" onChange={handleChange} required />
-            <input className= 'text-black' type="password" name="password" placeholder="Password" onChange={handleChange} required />
-            <button type="submit">สมัครสมาชิก</button>
-        </form>
-    )
+        <div className="flex items-center justify-center min-h-screen bg-gray-900">
+            <div className="bg-gray-800 text-white p-8 rounded-lg shadow-lg w-96">
+                <h2 className="text-2xl font-bold text-center mb-4">สมัครสมาชิก</h2>
+                <form onSubmit={handleRegister} className="space-y-4">
+                    <input
+                        className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="email"
+                        name="email"
+                        placeholder="📧 อีเมล"
+                        onChange={handleChange}
+                        required
+                    />
+                    <input
+                        className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="text"
+                        name="name"
+                        placeholder="👤 ชื่อ"
+                        onChange={handleChange}
+                        required
+                    />
+                    <input
+                        className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="password"
+                        name="password"
+                        placeholder="🔑 รหัสผ่าน"
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="submit"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded transition duration-200"
+                    >
+                        ✅ สมัครสมาชิก
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
 }
