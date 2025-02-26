@@ -3,9 +3,9 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+
 export default function Profile() {
   const { data: session, status } = useSession()
-
   const router = useRouter()
 
   useEffect(() => {
@@ -14,15 +14,17 @@ export default function Profile() {
     }
   }, [status, router])
 
-  // When after loading success and have session, show profile
+  console.log("🔍 Session Data:", session); // ✅ เช็คค่าที่ได้จาก useSession()
+
   return (
     status === 'authenticated' &&
-    session.user && (
+    session?.user && (
       <div className="flex h-screen items-center justify-center">
-        <div className="bg-white p-6 rounded-md shadow-md">
+        <div className="bg-white p-6 rounded-md shadow-md text-black">
           <p>
             Welcome, <b>{session.user.name}!</b>
           </p>
+          <p>ID: {session.user.id}</p> {/* ✅ เช็ค id ว่ามีไหม */}
           <p>Email: {session.user.email}</p>
           <button
             onClick={() => signOut({ callbackUrl: '/signin' })}
