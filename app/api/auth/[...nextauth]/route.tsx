@@ -1,4 +1,4 @@
-import NextAuth, { AuthOptions, Session } from "next-auth";
+import NextAuth, { AuthOptions, Session, DefaultSession  } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -7,15 +7,18 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const prisma = new PrismaClient();
 
-// 📌 กำหนด Custom Type สำหรับ Session ให้รองรับ user.id
-interface CustomSession extends Session {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-  };
-}
+// 📌 Custom Type สำหรับ Session ให้รองรับ user.id
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+    } & DefaultSession["user"]
+  }
 
+  interface User {
+    id: string
+  }
+}
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -54,10 +57,18 @@ export const authOptions: AuthOptions = {
       if (user) {
         token.id = user.id;
       }
+      console.log("🔑 JWT Token:", token);
       return token;
     },
     session: async ({ session, token }) => {
-      (session as CustomSession).user.id = token.id as string;
+      console.log("🛠 Before modifying session:", session);
+      
+      // ✅ กำหนด `session.user.id` ให้ถูกต้อง
+      if (session.user) {
+        (session.user as { id: string }).id = token.id as string;
+      }
+
+      console.log("✅ After modifying session:", session);
       return session;
     },
   },
