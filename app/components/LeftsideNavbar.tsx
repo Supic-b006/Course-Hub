@@ -4,6 +4,7 @@ import { FaHome, FaSearch, FaEnvelope, FaGlobe, FaTrash,FaPlus,FaHeart,FaFaceboo
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./SidebarContext";
 import { IoSettings } from "react-icons/io5";
+import { signOut } from "next-auth/react";
 
 export default function LeftsideNavbar() {
     const pathname = usePathname();
@@ -20,7 +21,7 @@ export default function LeftsideNavbar() {
             }`}
         >
             {/* Icon Navigation */}
-            <Link href="/" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
+            <Link href="/review" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
                 <FaUser />
                 <span>My Feed</span>
             </Link>
@@ -46,6 +47,13 @@ export default function LeftsideNavbar() {
             >
                 <FaFacebook />
             </Link>
+
+            <button
+                onClick={() => signOut({ callbackUrl: '/signin' })}
+                className="mx-4 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-md text-base transition-colors duration-200"
+            >
+                Sign out
+            </button>
         </div>
     );
 }
