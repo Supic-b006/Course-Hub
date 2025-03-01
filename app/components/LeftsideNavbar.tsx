@@ -25,7 +25,7 @@ export default function LeftsideNavbar() {
                 <FaUser />
                 <span>My Feed</span>
             </Link>
-            <Link href="/addingcourse" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
+            <Link href="review/addingcourse" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
                 <FaPlus />
                 <span>Adding Course</span>
             </Link>

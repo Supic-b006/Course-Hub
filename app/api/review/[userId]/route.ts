@@ -14,7 +14,8 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 
         const reviews = await prisma.review.findMany({
             where: { userId: user_id },
-            include: { course: true },
+            include: { course: true,user: true },
+
         });
 
         return NextResponse.json(reviews);

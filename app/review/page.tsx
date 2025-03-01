@@ -64,9 +64,9 @@ export default function Review() {
                             ? review.course.name.charAt(0).toUpperCase() + review.course.name.slice(1)
                             : 'คอร์สที่ไม่รู้จัก'}
                           </span>
-                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                          rating ⭐ {review.rating}
-                          </span>
+                          <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                ⭐ {review.rating}/5
+                            </span>
                         </div>
 
                       </div>

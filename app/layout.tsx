@@ -6,7 +6,9 @@ import LeftsideNavbar from "./components/LeftsideNavbar";
 import { getServerSession } from "next-auth";
 import AuthProvider from "./components/SessionProvider";
 import { SidebarProvider } from "./components/SidebarContext";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+const session = await getServerSession(authOptions);
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
