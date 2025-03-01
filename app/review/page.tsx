@@ -37,19 +37,19 @@ export default function Review() {
       fetchAllReviews() // ดึงข้อมูลรีวิวเมื่อผู้ใช้ล็อกอิน
     }
   }, [status, router])
-
+  
   return (
     status === 'authenticated' &&
     session?.user && (
-      <div className="min-h-screen bg-gray-100 flex flex-col">
+      <div className=" min-h-screen bg-gray-100 flex flex-col">
         
-          <div className="text-black w-full max-w-4xl mx-auto">
+          <div className="mt-20 text-black w-full max-w-4xl mx-auto">
             {/* แสดงข้อผิดพลาด */}
             {error && <p className="text-red-500 mb-4">{error}</p>}
 
             {/* แสดงข้อมูลรีวิว */}
             <div className="mt-4">
-              <h2 className="text-2xl font-bold mb-4">รีวิวทั้งหมด</h2>
+              <h2 className="text-5xl font-bold mb-4">รีวิวทั้งหมด</h2>
               {isLoading ? (
                 <p>กำลังโหลด...</p>
               ) : reviews.length > 0 ? (
@@ -63,6 +63,9 @@ export default function Review() {
                           {review.course?.name
                             ? review.course.name.charAt(0).toUpperCase() + review.course.name.slice(1)
                             : 'คอร์สที่ไม่รู้จัก'}
+                          </span>
+                          <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          rating ⭐ {review.rating}
                           </span>
                         </div>
 
