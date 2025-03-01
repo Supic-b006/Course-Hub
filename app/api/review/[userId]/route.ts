@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request, { params }: { params: { userId: string } }) {
     try {
-        const user_id =  parseInt(params.userId);
-        
+        const user_id = parseInt(params.userId);
+
         if (isNaN(user_id)) {
             return NextResponse.json({ error: "Invalid User ID" }, { status: 400 });
         }
@@ -27,10 +27,10 @@ export async function POST(request: Request, { params }: { params: { userId: str
     try {
         const user_id = parseInt(params.userId);
 
-        
+
         const { course_name, rating, content } = await request.json();
-        console.log(user_id,course_name, rating, content);
-        
+        // console.log(user_id,course_name, rating, content);
+
         if (!user_id || !course_name || !rating || !content)
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
 
@@ -62,4 +62,30 @@ export async function POST(request: Request, { params }: { params: { userId: str
         return NextResponse.json({ error: "Failed to add review" }, { status: 500 });
     }
 }
+
+export async function PUT(request: Request, { params }: { params: { userId: string } }) {
+    try {
+        const user_id = parseInt(params.userId);
+        const { courseId, rating, comment } = await request.json();
+
+        if (!user_id || !courseId || !rating || !comment) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        const updatedReview = await prisma.review.updateMany({
+            where: { userId: user_id, courseId: courseId },
+            data: { rating, comment },
+        });
+
+        if (updatedReview.count === 0) {
+            return NextResponse.json({ error: "Review not found" }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "Review updated successfully" });
+    } catch (error) {
+        console.error("Error updating review:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
 

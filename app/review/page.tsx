@@ -14,7 +14,7 @@ export default function Profile() {
     }
   }, [status, router])
 
-  console.log("🔍 Session Data:", session); // ✅ เช็คค่าที่ได้จาก useSession()
+  // console.log("🔍 Session Data:", session); 
   {/*status === 'authenticated' &&*/}
   return (
     session?.user &&(
