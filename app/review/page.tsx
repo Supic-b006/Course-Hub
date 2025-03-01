@@ -1,37 +1,90 @@
 'use client'
 
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-export default function Profile() {
+export default function Review() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [reviews, setReviews] = useState([]) // สถานะเก็บข้อมูลรีวิว
+  const [isLoading, setIsLoading] = useState(true) // สถานะสำหรับการโหลด
+  const [error, setError] = useState<string | null>(null) // สถานะสำหรับข้อผิดพลาด
+
+  // ฟังก์ชันดึงข้อมูลรีวิวทั้งหมด
+  const fetchAllReviews = async () => {
+    setIsLoading(true) // เริ่มการโหลด
+    setError(null) // ล้างข้อผิดพลาดก่อน
+    try {
+      const response = await fetch('/api/review') // เรียกข้อมูลจาก API
+      if (!response.ok) {
+        throw new Error('Failed to fetch reviews')
+      }
+      const data = await response.json()
+      setReviews(data) // เก็บข้อมูลรีวิวที่ได้
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+      setError('ไม่สามารถดึงข้อมูลรีวิวได้ กรุณาลองใหม่อีกครั้ง') // ข้อความแสดงข้อผิดพลาด
+    } finally {
+      setIsLoading(false) // หยุดการโหลด
+    }
+  }
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/')
+      router.push('/') // ถ้าไม่ล็อกอินให้ไปที่หน้าแรก
+    } else if (status === 'authenticated') {
+      fetchAllReviews() // ดึงข้อมูลรีวิวเมื่อผู้ใช้ล็อกอิน
     }
   }, [status, router])
 
-  // console.log("🔍 Session Data:", session); 
-  {/*status === 'authenticated' &&*/}
   return (
-    session?.user &&(
-      <div className="flex h-screen items-center justify-center" style={{ backgroundColor: '#fffeed' }}>
-        <div className="bg-white p-6 rounded-md shadow-md text-black">
-          <p>
-            Welcome, <b>{session.user.name}!</b>
-          </p>
-          <p>ID: {session.user.id}</p> {/* ✅ เช็ค id ว่ามีไหม */}
-          <p>Email: {session.user.email}</p>
-          <button
-            onClick={() => signOut({ callbackUrl: '/signin' })}
-            className="w-full bg-blue-500 text-white py-2 rounded"
-          >
-            Logout
-          </button>
-        </div>
+    status === 'authenticated' &&
+    session?.user && (
+      <div className="min-h-screen bg-gray-100 flex flex-col">
+        
+          <div className="text-black w-full max-w-4xl mx-auto">
+            {/* แสดงข้อผิดพลาด */}
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+
+            {/* แสดงข้อมูลรีวิว */}
+            <div className="mt-4">
+              <h2 className="text-2xl font-bold mb-4">รีวิวทั้งหมด</h2>
+              {isLoading ? (
+                <p>กำลังโหลด...</p>
+              ) : reviews.length > 0 ? (
+                <ul>
+                  {reviews.map((review: any) => (
+                    <li key={review.id} className="mb-8 py-6 px-4 border-4 border-gray-900 rounded-lg shadow-none bg-white">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          {/* แสดงชื่อวิชาในกรอบ */}
+                          <span className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {review.course?.name
+                            ? review.course.name.charAt(0).toUpperCase() + review.course.name.slice(1)
+                            : 'คอร์สที่ไม่รู้จัก'}
+                          </span>
+                        </div>
+
+                      </div>
+                      <p className="mt-2 text-gray-700">{review.comment}</p>
+                      <p className="mt-4 text-sm text-gray-500">
+                        รีวิวเมื่อ {new Date(review.createdAt).toLocaleString()}
+                      </p>
+
+                      <div className="mt-2">
+                        <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                        โดย {review.user?.name || 'ผู้ใช้ที่ไม่รู้จัก'}
+                      </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul> 
+              ) : (
+                <p>ไม่พบรีวิว</p>
+              )}
+            </div>
+          </div>
       </div>
     )
   )
