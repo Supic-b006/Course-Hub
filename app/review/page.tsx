@@ -15,11 +15,10 @@ export default function Profile() {
   }, [status, router])
 
   console.log("🔍 Session Data:", session); // ✅ เช็คค่าที่ได้จาก useSession()
-
+  {/*status === 'authenticated' &&*/}
   return (
-    status === 'authenticated' &&
-    session?.user && (
-      <div className="flex h-screen items-center justify-center">
+    session?.user &&(
+      <div className="flex h-screen items-center justify-center" style={{ backgroundColor: '#fffeed' }}>
         <div className="bg-white p-6 rounded-md shadow-md text-black">
           <p>
             Welcome, <b>{session.user.name}!</b>
