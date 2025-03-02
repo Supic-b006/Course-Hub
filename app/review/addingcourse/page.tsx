@@ -44,8 +44,8 @@ export default function Page() {
     return (
         status === 'authenticated' &&
         session?.user && (
-            <div className="bg-white p-8 max-w-3xl mx-auto">
-                <div className="max-w-2xl mx-auto mt-10 p-6 bg-blue-900 shadow-lg rounded-lg text-white">
+            <div className="mt-20 bg-white p-8 max-w-3xl mx-auto rounded-lg">
+                <div className="max-w-2xl mx-auto  p-6 bg-blue-900 shadow-lg rounded-lg text-white">
                     <h1 className="text-3xl font-bold text-center mb-6">✍️ เขียนรีวิวของฉัน</h1>
                     <form className="space-y-4">
                         <div>
