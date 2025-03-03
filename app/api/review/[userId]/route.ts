@@ -1,6 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { log } from "console";
+import { NextApiRequest, NextApiResponse } from "next";
+import { PiKeyReturnBold } from "react-icons/pi";
 
 const prisma = new PrismaClient();
 
@@ -14,7 +16,7 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 
         const reviews = await prisma.review.findMany({
             where: { userId: user_id },
-            include: { course: true,user: true },
+            include: { course: true, user: true },
 
         });
 
@@ -30,6 +32,7 @@ export async function POST(request: Request, { params }: { params: { userId: str
 
 
         const { course_name, rating, content } = await request.json();
+
         // console.log(user_id,course_name, rating, content);
 
         if (!user_id || !course_name || !rating || !content)
@@ -63,18 +66,17 @@ export async function POST(request: Request, { params }: { params: { userId: str
         return NextResponse.json({ error: "Failed to add review" }, { status: 500 });
     }
 }
-
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
     try {
         const user_id = parseInt(params.userId);
-        const { courseId, rating, comment } = await request.json();
+        const { reviewId, rating, comment } = await request.json(); // ✅ Change `courseId` to `reviewId`
 
-        if (!user_id || !courseId || !rating || !comment) {
+        if (!user_id || !reviewId || !rating || !comment) { // ✅ Check `reviewId`
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
         const updatedReview = await prisma.review.updateMany({
-            where: { userId: user_id, courseId: courseId },
+            where: { userId: user_id, id: reviewId }, // ✅ Use `id` instead of `courseId`
             data: { rating, comment },
         });
 
@@ -88,5 +90,30 @@ export async function PUT(request: Request, { params }: { params: { userId: stri
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
+
+
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const searchParams = request.nextUrl.searchParams;
+        const review_id = searchParams.get("reviewId");
+
+        if (!review_id) {
+            return NextResponse.json({ error: "Missing review id" }, { status: 400 });
+        }
+
+        await prisma.review.delete({
+            where: {
+                id: Number(review_id),
+            },
+        });
+
+        return NextResponse.json({ message: "Review deleted successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error deleting review:", error);
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    }
+}
+
 
 
