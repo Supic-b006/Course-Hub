@@ -4,6 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { setConfig } from "next/config";
+import { AiFillBoxPlot } from "react-icons/ai";
+import { Coustard } from "next/font/google";
+import { AwardIcon } from "lucide-react";
 
 interface Review {
     id: string;
@@ -18,68 +22,214 @@ interface Review {
     createdAt: string;
 }
 
+interface newReview {
+    newNameCourse: string;
+    newContent: string;
+    newRating: number;
+}
+
 export default function Page() {
     const { data: session, status } = useSession();
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [newReview, setNewReview] = useState({
+        newNameCourse: "",
+        newContent: "",
+        newRating: 0,
+    })
+    const [countdown, setCountdown] = useState(3);
+    const [showModal, setShowModal] = useState(false);
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [dataEdit, setDataEdit] = useState({
+        editCourseId: "",
+        editCourse: "",
+        editContent: "",
+        editRating: 0
+    })
+
+    const handleEditModal = (review: Review) => {
+        setDataEdit({
+            editCourseId: review.id, 
+            editCourse: review.course.name,
+            editContent: review.comment,
+            editRating: review.rating
+        });
+        setShowEditModal(true);
+    };
+
+
+    console.log(session?.user.id);
+
     const router = useRouter();
 
     const fetchReview = async () => {
+        if (!session?.user?.id) {
+            console.warn("Session ยังไม่พร้อม หรือไม่มี user ID");
+            return;
+        }
+
         try {
-            const response = await axios.get<Review[]>(`/api/review/${session?.user.id}`);
-            console.log("Fetched reviews:", response.data);
+            const response = await axios.get<Review[]>(`/api/review/${session.user.id}`);
+            console.log("✅ รีวิวที่ดึงมา:", response.data);
             setReviews(response.data);
         } catch (error) {
-            console.error("Error fetching reviews:", error);
+            console.error("❌ เกิดข้อผิดพลาดในการดึงรีวิว:", error);
+        }
+    };
+
+    const handleDelete = async (Id: string) => {
+        // console.log(courseId);
+
+        try {
+            if (!session?.user?.id) {
+                console.warn("Session ยังไม่พร้อม หรือไม่มี user ID");
+                return;
+            }
+            await axios.delete(`/api/review/${session.user.id}?reviewId=${Id}`);
+            fetchReview();
+        }
+        catch (error) {
+            console.error("เกิดข้อผิดพลาดในการลบรีวิว: ", error);
+        }
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setNewReview(prevState => ({ ...prevState, [name]: value }));
+    };
+
+    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setDataEdit((prev) => ({
+            ...prev,
+            [name]: name === "editRating" ? Number(value) : value,
+        }));
+    }
+
+    const handleSubmitEdit = async (id: string) => {
+        try {
+            if (!session?.user?.id) {
+                console.warn("Session ยังไม่พร้อม หรือไม่มี user ID");
+                return;
+            }
+
+            await axios.put(`/api/review/${session.user.id}`, {
+                reviewId: id,
+                rating: dataEdit.editRating,
+                comment: dataEdit.editContent
+            });
+
+            fetchReview();
+            setShowEditModal(false);
+            setDataEdit({
+                editCourseId: id,
+                editCourse: "",
+                editContent: "",
+                editRating: 0
+            });
+        }
+        catch (error) {
+            console.error("เกิดข้อผิดพลาดในการอัพเดทรีวิว: ", error);
         }
     };
 
     useEffect(() => {
+        if (status === "loading") return;
         if (status === "unauthenticated") {
             router.push("/signin");
-        } else if (status === "authenticated") {
+        } else if (status === "authenticated" && session?.user?.id) {
+            console.log("Fetching reviews...");
             fetchReview();
         }
-    }, [status, session]);
+    }, [status, session?.user?.id]);
 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!session?.user?.id) {
+            console.warn("Session ยังไม่พร้อม หรือไม่มี user ID");
+            return;
+        }
+
+        try {
+            await axios.post(`/api/review/${session.user.id}`, {
+                course_name: newReview.newNameCourse,
+                rating: Number(newReview.newRating),
+                content: newReview.newContent,
+            });
+
+            setShowModal(true);
+            setCountdown(3);
+            setNewReview({
+                newNameCourse: "",
+                newContent: "",
+                newRating: 0,
+            })
+
+            fetchReview();
+
+            const timer = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev === 1) {
+                        clearInterval(timer);
+                        setShowModal(false);
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        catch (error) {
+            console.error("เกิดข้อผิดพลาดในการบันทึกรีวิว: ", error);
+        }
+    }
     return (
         status === 'authenticated' &&
         session?.user && (
             <div className="mt-20 bg-white p-8 max-w-3xl mx-auto rounded-lg">
+
+                {/* input form */}
                 <div className="max-w-2xl mx-auto  p-6 bg-blue-900 shadow-lg rounded-lg text-white">
                     <h1 className="text-3xl font-bold text-center mb-6">✍️ เขียนรีวิวของฉัน</h1>
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
+                        {/* course */}
                         <div>
                             <label className="block text-lg font-semibold mb-1">📚 ชื่อคอร์ส</label>
                             <input
                                 className="w-full p-3 border border-blue-700 rounded bg-white text-black"
                                 type="text"
                                 placeholder="กรอกชื่อคอร์ส"
-                            // value={course}
-                            // onChange={(e) => setCourse(e.target.value)}
+                                name="newNameCourse"
+                                value={newReview.newNameCourse}
+                                onChange={handleChange}
                             />
                         </div>
+                        {/* content */}
                         <div>
                             <label className="block text-lg font-semibold mb-1">📝 คอมเมนต์</label>
                             <textarea
                                 className="w-full p-3 border border-blue-700 rounded bg-white text-black h-40"
                                 placeholder="เขียนรีวิวของคุณที่นี่..."
-                            // value={comment}
-                            // onChange={(e) => setComment(e.target.value)}
+                                name="newContent"
+                                value={newReview.newContent}
+                                onChange={handleChange}
+
                             />
                         </div>
+                        {/* rating */}
                         <div>
-                            <label className="block text-lg font-semibold mb-1">⭐ ให้คะแนน</label>
+                            <label className="block text-lg font-semibold mb-1">⭐ ให้คะแนน (0-5)</label>
                             <input
                                 className="w-full p-3 border border-blue-700 rounded bg-white text-black"
                                 type="number"
                                 min="1"
                                 max="5"
                                 placeholder="ให้คะแนน (1-5)"
-                            // value={rating}
-                            // onChange={(e) => setRating(Number(e.target.value))}
+                                name="newRating"
+                                value={newReview.newRating}
+                                onChange={handleChange}
                             />
                         </div>
-                        <button
+                        <button type="submit"
                             className="bg-blue-700 hover:bg-blue-800 text-xl font-bold p-3 text-center w-full text-white rounded transition duration-200"
                         >
                             ➕ เพิ่มรีวิว
@@ -87,6 +237,7 @@ export default function Page() {
                     </form>
                 </div>
 
+                {/* show myReview */}
                 <h2 className="mt-5 text-3xl font-bold text-gray-800 mb-4">รีวิวของฉัน</h2>
                 {reviews.length > 0 ? (
                     reviews.map((review) => (
@@ -97,8 +248,8 @@ export default function Page() {
                                         ? review.course.name.charAt(0).toUpperCase() + review.course.name.slice(1)
                                         : 'คอร์สที่ไม่รู้จัก'}
                                 </span>
-                                <span className="bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                                    ⭐ {review.rating}/5
+                                <span className="bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                    ⭐{review.rating}/5
                                 </span>
                             </div>
 
@@ -116,12 +267,80 @@ export default function Page() {
                             <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                                 โดย {review.user?.name || 'ผู้ใช้ที่ไม่รู้จัก'}
                             </span>
+                            <div className="flex justify-center mt-2">
+                                <button className="rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white py-1 mx-2 w-1/2"
+                                    onClick={() => handleEditModal(review)}
+                                >
+                                    ✏️ Edit
+                                </button>
+                                <button className="rounded-lg bg-red-500 hover:bg-red-600 text-white py-1 mx-2 w-1/2"
+                                    onClick={() => handleDelete(review.id)}
+                                >
+                                    🗑️ Delete
+                                </button>
+                            </div>
                         </div>
                     ))
                 ) : (
                     <p className="text-gray-500 text-center">ยังไม่มีรีวิว</p>
                 )}
+
+                {/* Modal inputdata Popup */}
+                {showModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+                            <h2 className="text-xl font-bold text-green-600">✅ บันทึกรีวิวเรียบร้อย!</h2>
+                            <p className="text-gray-600">หน้าต่างจะปิดใน {countdown} วินาที...</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal Edit Popup */}
+                {showEditModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in">
+                        <div className="bg-white p-6 rounded-2xl shadow-xl w-[700px] h-[500px] max-w-[90%] transform transition-all duration-300">
+                            <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">แก้ไขรีวิว</h2>
+
+                            <label className="block text-gray-700 font-semibold">ชื่อคอร์ส:</label>
+                            <p className="bg-gray-100 text-gray-800 p-2 rounded-lg">{dataEdit.editCourse}</p>
+
+                            <label className="block mt-4 text-gray-700 font-semibold">รีวิวของคุณ</label>
+                            <textarea
+                                className="w-full p-3 border border-gray-300 rounded-lg mt-2 text-black focus:ring-2 focus:ring-blue-400 focus:outline-none resize-none"
+                                name="editContent"
+                                value={dataEdit.editContent}
+                                onChange={handleEditChange}
+                                rows={4}
+                            ></textarea>
+
+                            <label className="block mt-4 text-gray-700 font-semibold">⭐ ให้คะแนน (1-5)</label>
+                            <input
+                                className="w-full p-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                type="number" min="1" max="5"
+                                value={dataEdit.editRating}
+                                name="editRating"
+                                onChange={handleEditChange}
+                            />
+
+                            <div className="flex justify-between mt-6">
+                                <button
+                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-all duration-200 mx-1"
+                                    onClick={() => handleSubmitEdit(dataEdit.editCourseId)}
+                                >
+                                    ✅ ตกลง
+                                </button>
+                                <button
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all duration-200 mx-1"
+                                    onClick={() => setShowEditModal(false)}
+                                >
+                                    ❌ ยกเลิก
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         )
     );
 }
+`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               `
