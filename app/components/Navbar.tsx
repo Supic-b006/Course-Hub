@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react"; // เพิ่มบรรทัดนี้
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -33,7 +33,7 @@ export default function Navbar() {
                     >
                         <FiMenu />
                     </button>
-                    <Link href="/review" className="text-4xl font-bold tracking-wide">
+                    <Link href="/review" className="text-4xl font-bold tracking-wide text-white hover:text-gray-300">
                         CourseHub
                     </Link>
                 </div>
@@ -41,21 +41,29 @@ export default function Navbar() {
                 {/* Search Bar */}
                 <form onSubmit={handleSearch} className="flex-1 mx-8">
                     <div className="relative max-w-xl mx-auto">
-                        <input
+                        {/* Uncomment this if you want to enable search functionality */}
+                        {/* <input
                             type="text"
                             placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full py-2 px-4 pr-10 rounded-lg border border-gray-600 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <button 
+                        /> */}
+                        {/* <button 
                             type="submit" 
                             className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                         >
                             <FiSearch />
-                        </button>
+                        </button> */}
                     </div>
                 </form>
+
+                {/* User Info Section */}
+                <div className="flex items-center gap-4">
+                    <div className="bg-gray-700 text-white py-2 px-4 rounded-lg">
+                        <label className="font-semibold">Hello, {session.user.name}</label>
+                    </div>
+                </div>
             </nav>
         )
     );

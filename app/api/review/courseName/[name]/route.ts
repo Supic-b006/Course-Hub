@@ -5,12 +5,15 @@ const prisma = new PrismaClient();
 
 export async function GET(req: NextRequest, context: { params: { name: string } }) {
     const { name } = context.params;
-
+    if (!name) {
+        return NextResponse.json({ error: "Missing Name course" }, { status: 400 });
+    }
+    
     try {
         const reviews = await prisma.review.findMany({
             where: {
                 course: {
-                    name: name
+                    name: name.toLowerCase(),
                 }
             },
             include:{

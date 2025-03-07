@@ -26,7 +26,9 @@ export default function LoginPage() {
             }
 
             setMessage("✅ เข้าสู่ระบบสำเร็จ!");
-            router.push("/review"); // นำทางไปที่หน้า review
+            setTimeout(() => {
+                router.replace("/review");
+            }, 500);
         } catch (error) {
             console.error("เกิดข้อผิดพลาดในการเข้าสู่ระบบ", error);
             setMessage("❌ เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
@@ -36,7 +38,7 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-500 to-purple-500 dark:from-gray-900 dark:to-black p-4">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-sm text-center">
-                <h1 className = 'text-5xl blod text-orange-400'>Course-hub</h1>
+                <h1 className="text-5xl font-bold text-orange-400">Course-hub</h1>
                 <h2 className="text-2xl font-semibold text-gray-700 dark:text-white mb-4">เข้าสู่ระบบ</h2>
 
                 <form onSubmit={handleLogin} className="space-y-4">

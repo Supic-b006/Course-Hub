@@ -7,7 +7,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 const prisma = new PrismaClient();
 
-// 📌 Custom Type สำหรับ Session ให้รองรับ user.id
+//Custom Type สำหรับ Session ให้รองรับ user.id
 declare module "next-auth" {
   interface Session {
     user: {
@@ -29,7 +29,7 @@ export const authOptions: AuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("⚠️ กรุณากรอก Email และ Password");
+          throw new Error(" กรุณากรอก Email และ Password");
         }
 
         const user = await prisma.user.findUnique({
@@ -37,7 +37,7 @@ export const authOptions: AuthOptions = {
         });
 
         if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
-          throw new Error("❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+          throw new Error(" อีเมลหรือรหัสผ่านไม่ถูกต้อง");
         }
 
         return {
@@ -63,18 +63,18 @@ export const authOptions: AuthOptions = {
     session: async ({ session, token }) => {
       console.log("🛠 Before modifying session:", session);
       
-      // ✅ กำหนด `session.user.id` ให้ถูกต้อง
+      //กำหนด `session.user.id` ให้ถูกต้อง
       if (session.user) {
         (session.user as { id: string }).id = token.id as string;
       }
 
-      console.log("✅ After modifying session:", session);
+      console.log(" After modifying session:", session);
       return session;
     },
   },
 };
 
-// ✅ ใช้ API Route Handler ที่รองรับ TypeScript
+//  ใช้ API Route Handler ที่รองรับ TypeScript
 const handler = (req: NextApiRequest, res: NextApiResponse) =>
   NextAuth(req, res, authOptions);
 

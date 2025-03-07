@@ -35,11 +35,11 @@ export default function LeftsideNavbar() {
                 <FaPlus />
                 <span>Adding Course</span>
             </Link>
-            <Link href="/favorite" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
+            <Link href="/review" className="text-white text-1xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
                 <FaHeart />
                 <span>Favorite Review</span>
             </Link>
-            <Link href="/setting" className="text-white text-2xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
+            <Link href="/review" className="text-white text-2xl p-4 rounded-md transition hover:bg-gray-700 flex items-center gap-3">
                 <IoSettings/>
                 <span>Setting</span>
             </Link>
