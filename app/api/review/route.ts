@@ -6,12 +6,25 @@ const prisma = new PrismaClient();
 export async function GET() {
   try {
     const reviews = await prisma.review.findMany({
-      include: {
-        user: true,   
-        course: true, 
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        course: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 

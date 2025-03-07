@@ -4,10 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { setConfig } from "next/config";
-import { AiFillBoxPlot } from "react-icons/ai";
-import { Coustard } from "next/font/google";
-import { AwardIcon } from "lucide-react";
 
 interface Review {
     id: string;
@@ -20,15 +16,21 @@ interface Review {
     };
     rating: number;
     createdAt: string;
-}
+};
 
 interface newReview {
     newNameCourse: string;
     newContent: string;
     newRating: number;
-}
+};
+
+interface Course {
+    id: string;
+    name: string;
+};
 
 export default function Page() {
+    const router = useRouter();
     const { data: session, status } = useSession();
     const [reviews, setReviews] = useState<Review[]>([]);
     const [newReview, setNewReview] = useState({
@@ -47,9 +49,12 @@ export default function Page() {
         editRating: 0
     })
 
+    const [allCourse, setallCourse] = useState<Course[]>([]);
+    const [suggestions, setSuggestions] = useState<Course[]>([])
+
     const handleEditModal = (review: Review) => {
         setDataEdit({
-            editCourseId: review.id, 
+            editCourseId: review.id,
             editCourse: review.course.name,
             editContent: review.comment,
             editRating: review.rating
@@ -60,9 +65,11 @@ export default function Page() {
 
     console.log(session?.user.id);
 
-    const router = useRouter();
 
+
+    // fatchdata
     const fetchReview = async () => {
+        //cheak session user id
         if (!session?.user?.id) {
             console.warn("Session ยังไม่พร้อม หรือไม่มี user ID");
             return;
@@ -76,6 +83,19 @@ export default function Page() {
             console.error("❌ เกิดข้อผิดพลาดในการดึงรีวิว:", error);
         }
     };
+
+    const fetchAllcourse = async () => {
+        try {
+            const response = await axios.get<Course[]>("/api/course");
+            setallCourse(response.data);
+            // console.log(allCourse);
+
+        } catch (error) {
+            console.error("❌ เกิดข้อผิดพลาดในการดึงรีวิว:", error);
+        }
+    };
+
+
 
     const handleDelete = async (Id: string) => {
         // console.log(courseId);
@@ -96,7 +116,27 @@ export default function Page() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setNewReview(prevState => ({ ...prevState, [name]: value }));
+
+        // ถ้ากรอกชื่อคอร์ส
+        if (name === "newNameCourse") {
+            if (value.trim() === "") {
+                setSuggestions([]);  // ถ้าชื่อคอร์สว่าง ก็ให้ซ่อนคำแนะนำ
+            } else {
+                // กรองชื่อคอร์สที่ตรงกับค่าที่พิมพ์
+                const filteredSuggestions = allCourse.filter(course =>
+                    course.name && course.name.toLowerCase().includes(value.toLowerCase())
+                );
+
+                setSuggestions(filteredSuggestions);
+                // แสดงผลลัพธ์ที่กรองแล้ว
+            }
+        }
     };
+
+    const handleSelect = (courseName: string) =>{
+        setNewReview(prevState => ({ ...prevState, newNameCourse: courseName }));
+        setSuggestions([]);
+    }
 
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -139,6 +179,7 @@ export default function Page() {
             router.push("/signin");
         } else if (status === "authenticated" && session?.user?.id) {
             console.log("Fetching reviews...");
+            fetchAllcourse();
             fetchReview();
         }
     }, [status, session?.user?.id]);
@@ -167,7 +208,7 @@ export default function Page() {
             })
 
             fetchReview();
-
+            fetchAllcourse();
             const timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev === 1) {
@@ -192,17 +233,32 @@ export default function Page() {
                     <h1 className="text-3xl font-bold text-center mb-6">✍️ เขียนรีวิวของฉัน</h1>
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         {/* course */}
-                        <div>
-                            <label className="block text-lg font-semibold mb-1">📚 ชื่อคอร์ส</label>
+                        <div className="relative">
+                            <label className="block text-lg font-semibold mb-2">📚 ชื่อคอร์ส</label>
                             <input
-                                className="w-full p-3 border border-blue-700 rounded bg-white text-black"
+                                className="w-full p-3 border border-blue-700 rounded-md bg-white text-black focus:ring-2 focus:ring-blue-600"
                                 type="text"
                                 placeholder="กรอกชื่อคอร์ส"
                                 name="newNameCourse"
                                 value={newReview.newNameCourse}
                                 onChange={handleChange}
                             />
+                            {suggestions.length > 0 && (
+                                <ul className="absolute left-0 w-full bg-white border border-blue-700 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto z-10 mt-2">
+                                    {suggestions.map((course: Course) => (
+                                        <li
+                                            key={course.id}
+                                            className="text-lg p-3 hover:bg-blue-100 cursor-pointer text-black transition duration-200"
+                                            onClick={() => handleSelect(course.name)}
+                                        >
+                                            {course.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
+
+
                         {/* content */}
                         <div>
                             <label className="block text-lg font-semibold mb-1">📝 คอมเมนต์</label>
@@ -267,6 +323,7 @@ export default function Page() {
                             <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
                                 โดย {review.user?.name || 'ผู้ใช้ที่ไม่รู้จัก'}
                             </span>
+                            {/* buutton */}
                             <div className="flex justify-center mt-2">
                                 <button className="rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white py-1 mx-2 w-1/2"
                                     onClick={() => handleEditModal(review)}
@@ -313,10 +370,10 @@ export default function Page() {
                                 rows={4}
                             ></textarea>
 
-                            <label className="block mt-4 text-gray-700 font-semibold">⭐ ให้คะแนน (1-5)</label>
+                            <label className="block mt-4 text-gray-700 font-semibold">⭐ ให้คะแนน (0-5)</label>
                             <input
                                 className="w-full p-2 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                type="number" min="1" max="5"
+                                type="number" min="0" max="5"
                                 value={dataEdit.editRating}
                                 name="editRating"
                                 onChange={handleEditChange}

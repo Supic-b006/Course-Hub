@@ -3,12 +3,16 @@ import { PrismaClient } from "@prisma/client";
 import { log } from "console";
 import { NextApiRequest, NextApiResponse } from "next";
 import { PiKeyReturnBold } from "react-icons/pi";
+import { tree } from "next/dist/build/templates/app-page";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: Request, { params }: { params: { userId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
     try {
-        const user_id = parseInt(params.userId);
+        // await params next 13+ dynamic routing
+        const { userId } = await params; 
+
+        const user_id = parseInt(userId);
 
         if (isNaN(user_id)) {
             return NextResponse.json({ error: "Invalid User ID" }, { status: 400 });
@@ -16,8 +20,21 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 
         const reviews = await prisma.review.findMany({
             where: { userId: user_id },
-            include: { course: true, user: true },
-
+            select: {
+                id: true,
+                comment: true,
+                rating: true,
+                user: {
+                    select:{
+                        name: true,
+                    }
+                },
+                course:{
+                    select:{
+                        name: true,
+                    }
+                }
+            }
         });
 
         return NextResponse.json(reviews);
@@ -28,7 +45,8 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 
 export async function POST(request: Request, { params }: { params: { userId: string } }) {
     try {
-        const user_id = parseInt(params.userId);
+        const { userId } = await params; 
+        const user_id = parseInt(userId);
 
 
         const { course_name, rating, content } = await request.json();
@@ -66,17 +84,18 @@ export async function POST(request: Request, { params }: { params: { userId: str
         return NextResponse.json({ error: "Failed to add review" }, { status: 500 });
     }
 }
+
 export async function PUT(request: Request, { params }: { params: { userId: string } }) {
     try {
         const user_id = parseInt(params.userId);
-        const { reviewId, rating, comment } = await request.json(); // ✅ Change `courseId` to `reviewId`
+        const { reviewId, rating, comment } = await request.json();
 
-        if (!user_id || !reviewId || !rating || !comment) { // ✅ Check `reviewId`
+        if (!user_id || !reviewId || !rating || !comment) { 
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
         const updatedReview = await prisma.review.updateMany({
-            where: { userId: user_id, id: reviewId }, // ✅ Use `id` instead of `courseId`
+            where: { userId: user_id, id: reviewId }, 
             data: { rating, comment },
         });
 
