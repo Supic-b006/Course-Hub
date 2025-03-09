@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { Agbalumo } from 'next/font/google';
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+
+const agbalumo = Agbalumo({ subsets: ['latin'], weight: "400" });
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,61 +41,63 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen items-center justify-center bg-[]">
-            <h1 className="text-[80px] font-bold text-orange-400 mb-8 font-Agbalumo">Course-hub</h1>
-            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-xl w-full max-w-[450px] text-center">
-
-                <h2 className="text-2xl font-semibold text-gray-700 dark:text-white mb-4">เข้าสู่ระบบ</h2>
-
+        <div className="flex flex-col min-h-screen items-center justify-center bg-[#FFFAE6]">
+            <h1 className={`${agbalumo.className} text-[90px] font-extrabold text-black mb-8 drop-shadow-xl italic`}>Course Hub</h1>
+            <div className="bg-black p-10 rounded-3xl shadow-2xl w-full max-w-[450px] text-center">
+                <h2 className="text-2xl font-semibold text-[#FFFAE6] italic mb-6">Sign in</h2>
                 <form onSubmit={handleLogin} className="space-y-6">
                     <div>
                         <input
                             type="email"
-                            placeholder="อีเมล"
+                            placeholder="Username"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-3 bg-[#FFFAE6] text-gray-600 font-semibold italic rounded-full focus:outline-none"
                             required
                         />
                     </div>
-
-                    <div>
+                    <div className="relative">
                         <input
-                            type="password"
-                            placeholder="รหัสผ่าน"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full px-4 py-3 bg-[#FFFAE6] text-gray-600 font-semibold italic rounded-full focus:outline-none"
                             required
                         />
+                        <button
+                            type="button"
+                            className="absolute inset-y-0 right-4 flex items-center text-gray-600 hover:text-gray-800"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                            {showPassword ? (
+                                <EyeOffIcon className="h-6 w-6" />
+                            ) : (
+                                <EyeIcon className="h-6 w-6" />
+                            )}
+                        </button>
                     </div>
-
                     <button
                         type="submit"
-                        className="w-full bg-green-700 text-white py-3 rounded-md hover:bg-green-600 transition duration-300"
+                        className="w-full bg-[#FFA500] text-white font-bold italic py-3 rounded-full shadow-lg hover:bg-[#FF8C00] transition duration-300"
                     >
-                        เข้าสู่ระบบ
+                        Login
                     </button>
                 </form>
-
-                <div className="my-4 text-gray-500">
-                    <hr />
-                </div>
-
-                <button
+                <p
+                    className="mt-6 text-[#FFA500] font-bold italic cursor-pointer hover:text-[#FF8C00] transition duration-300"
                     onClick={() => router.push("/signup")}
-                    className="w-full bg-blue-700 text-white py-3 rounded-md hover:bg-blue-500 transition duration-300"
                 >
-                    สมัครสมาชิก
-                </button>
+                    Sign up
+                </p>
 
                 {message && (
                     <p className={`mt-4 text-sm font-medium ${message.startsWith("✅") ? "text-green-500" : "text-red-500"}`}>
                         {message}
                     </p>
                 )}
+                
             </div>
         </div>
-
     );
 }
