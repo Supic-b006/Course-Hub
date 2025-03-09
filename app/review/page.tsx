@@ -41,7 +41,7 @@ export default function Review() {
   return (
     status === 'authenticated' &&
     session?.user && (
-      <div className=" min-h-screen bg-gray-100 flex flex-col">
+      <div className=" min-h-screen bg-[#FFFDED] flex flex-col">
         
           <div className="mt-20 text-black w-full max-w-4xl mx-auto">
             {/* แสดงข้อผิดพลาด */}
