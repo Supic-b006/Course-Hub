@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily:{
+        logo:["Agbalumo", "system-ui"]
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

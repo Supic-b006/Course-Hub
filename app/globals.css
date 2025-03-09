@@ -9,11 +9,11 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #FFFDED;
     --foreground: #ededed;
   }
 }
-
+@import url('https://fonts.googleapis.com/css2?family=Agbalumo&display=swap');
 body {
   color: var(--foreground);
   background: var(--background);
