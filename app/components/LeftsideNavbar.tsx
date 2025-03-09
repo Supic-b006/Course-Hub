@@ -10,14 +10,14 @@ import { useSidebar } from "./SidebarContext";
 export default function LeftsideNavbar() {
     const router = useRouter();
     const pathname = usePathname();
-    const { isSidebarOpen } = useSidebar();
-
+    const { isSidebarOpen, toggleSidebar } = useSidebar();
     if (pathname === "/signin" || pathname === "/signup") {
         return null;
     }
 
     const handleSignOut = async () => {
         await signOut({ redirect: false });
+        toggleSidebar()
         router.push("/signin");
     };
 
